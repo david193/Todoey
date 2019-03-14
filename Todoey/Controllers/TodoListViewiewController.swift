@@ -8,8 +8,9 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
 	var todoItems: Results<Item>?
 	let realm = try! Realm()
@@ -35,16 +36,25 @@ class TodoListViewController: UITableViewController {
 	}
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-		let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-		if let item = todoItems?[indexPath.row] {
-			cell.textLabel?.text = item.title
-			cell.accessoryType = item.done ? .checkmark : .none
+		let cell = super.tableView (tableView, cellForRowAt: indexPath)
+		if let todoItem = todoItems?[indexPath.row] {
+			cell.textLabel?.text = todoItem.title
+			cell.accessoryType = todoItem.done ? .checkmark : .none
 		}
 		else {
 			cell.textLabel?.text = "No items yet"
 		}
 		return cell
+		
+//		let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+//		if let item = todoItems?[indexPath.row] {
+//			cell.textLabel?.text = item.title
+//			cell.accessoryType = item.done ? .checkmark : .none
+//		}
+//		else {
+//			cell.textLabel?.text = "No items yet"
+//		}
+//		return cell
 	}
 
 
@@ -68,6 +78,21 @@ class TodoListViewController: UITableViewController {
 		tableView.deselectRow(at: indexPath, animated: true)
 	}
 
+	
+	// MARK: - Delete data from Swipe
+
+	override func deleteFromModel (at indexPath: IndexPath) {
+		if let todoItem = todoItems?[indexPath.row] {
+			do {
+				try self.realm.write {
+					self.realm.delete (todoItem)
+				}
+			} catch {
+				print ("Error deleting item: \(error)")
+			} // catch
+		} // if
+	}  // func updateModel
+	
 
 	// MARK: - Add New Items
 
