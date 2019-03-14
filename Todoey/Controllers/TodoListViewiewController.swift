@@ -54,8 +54,17 @@ class TodoListViewController: UITableViewController {
 
 		// print ("didSelectRowAt \(indexPath.row): \(itemArray[indexPath.row].title)")
 
-//		todoItems?[indexPath.row].done = !todoItems?[indexPath.row].done
-//		saveItems()
+		if let item = todoItems?[indexPath.row] {
+			do {
+				try realm.write {
+					item.done = !item.done
+				}
+			} catch {
+				print ("Error saving item.done status: \(error)")
+			}
+		}
+		tableView.reloadData()
+		
 		tableView.deselectRow(at: indexPath, animated: true)
 	}
 
@@ -78,6 +87,7 @@ class TodoListViewController: UITableViewController {
 							try self.realm.write {
 								let item = Item()
 								item.title = textField.text!
+								item.dateCreated = Date()
 								currentCategory.items.append(item)
 							}
 						} catch {
@@ -110,23 +120,20 @@ class TodoListViewController: UITableViewController {
 
 // MARK: Search bar methods
 
-//extension TodoListViewController: UISearchBarDelegate {
-//
-//	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//		let request: NSFetchRequest<Item> = Item.fetchRequest()
-//		request.predicate = NSPredicate (format: "title CONTAINS[cd] %@", searchBar.text!)
-//		request.sortDescriptors = [NSSortDescriptor (key: "title", ascending: true)]
-//
-//		loadItems (with: request)
-//	}
-//
-//	func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//		if searchBar.text?.count == 0 {
-//			loadItems()
-//			DispatchQueue.main.async {
-//				searchBar.resignFirstResponder()
-//			}
-//		}
-//	}
-//
-//}  //  extension TodoListViewController: UISearchBarDelegate
+extension TodoListViewController: UISearchBarDelegate {
+
+	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+		todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+		tableView.reloadData()
+	}
+
+	func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+		if searchBar.text?.count == 0 {
+			loadItems()
+			DispatchQueue.main.async {
+				searchBar.resignFirstResponder()
+			}
+		}
+	}
+
+}  //  extension TodoListViewController: UISearchBarDelegate

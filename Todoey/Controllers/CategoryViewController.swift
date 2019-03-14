@@ -58,7 +58,7 @@ class CategoryViewController: UITableViewController {
 			(action) in
 			let category = Category()
 			category.name = categoryTextField.text!
-			self.save(category: category)
+			self.save (category: category)
 		}
 		
 		let alert = UIAlertController (title: "Add new category", message: "", preferredStyle: .alert)
